@@ -1,14 +1,11 @@
+import ButtonBrand from "@/components/ButtonBrand";
 import { router } from "expo-router";
 // import LottieView from "lottie-react-native";
 import React, { useRef, useState } from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
+import { Text } from "react-native-paper";
+import { AppTheme } from "./config/theme";
 
 const { width } = Dimensions.get("window");
 
@@ -74,16 +71,17 @@ const onBoardingScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.slide}>
             {/* <LottieView source={item.animation} autoPlay style={{ height: 250 }} /> */}
-            <Text style={styles.title}>{item.title}</Text>
+            <Text variant="headlineMedium" style={styles.title}>{item.title}</Text>
             <Text style={styles.subtitle}>{item.subtitle}</Text>
           </View>
         )}
       />
-      <TouchableOpacity style={styles.btn} onPress={handleNext}>
-        <Text style={styles.btnText}>
-          {currentIndex === slides.length - 1 ? "Get Started" : "Next"}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.btn}>
+        <ButtonBrand
+          text={currentIndex === slides.length - 1 ? "Get Started" : "Next"}
+          fxn={handleNext}
+        />
+      </View>
     </View>
   );
 };
@@ -92,6 +90,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingLeft: 20,
+    paddingRight: 20,
   },
   slide: {
     width,
@@ -100,9 +100,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 24,
     fontWeight: "bold",
-    color: "#222",
+    color: AppTheme.colors.primary,
     marginTop: 20,
   },
   subtitle: {
@@ -110,20 +109,10 @@ const styles = StyleSheet.create({
     color: "#555",
     textAlign: "center",
     marginTop: 10,
+    // padding: 20,
   },
   btn: {
-    backgroundColor: "#1E90FF",
-    padding: 15,
-    borderRadius: 25,
-    alignSelf: "center",
-    width: "70%",
     marginBottom: 40,
-  },
-  btnText: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });
 

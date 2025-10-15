@@ -1,11 +1,15 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View , ScrollView } from "react-native";
+import { SafeAreaView, SafeAreaProvider  } from "react-native-safe-area-context";
 
 const HomeTab = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to ncap you njangi box</Text>
-      <Text style={styles.subtitle}>This is your Home dashboard.</Text>
-    </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        
+          <Text style={styles.title}>Home Screen</Text>
+          <Text style={styles.subtitle}>Welcome to the Home Tab</Text>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 

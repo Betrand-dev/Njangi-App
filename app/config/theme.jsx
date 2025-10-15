@@ -1,6 +1,6 @@
 export const AppTheme = {
   colors: {
-    primary: "#1e90ff",
+    primary: "#8f08fdde",
     background: "#f8f9fb",
     text: "#2222",
     accent: "#ffb703",

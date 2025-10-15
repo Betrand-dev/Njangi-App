@@ -1,10 +1,15 @@
 import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, SafeAreaProvider  } from "react-native-safe-area-context";
 
 const Groups = () => {
   return (
-    <View style={{ flex: 1 }}>
-      <Text>groups</Text>
-    </View>
+    <SafeAreaProvider>
+      <SafeAreaView style={{flex: 1}}>
+        <View>
+          <Text>Groups Screen</Text>
+        </View>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
