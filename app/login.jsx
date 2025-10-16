@@ -1,6 +1,5 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { SafeAreaView, SafeAreaProvider  } from "react-native-safe-area-context";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,9 +7,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
+  Text
 } from "react-native";
-import { Text } from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import ButtonBrand from "../components/ButtonBrand";
 import { AppTheme } from "./config/theme";
 
@@ -25,19 +24,20 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 p-4  bg-background">
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <Text variant="headlineMedium" style={styles.title}>
+      <View className="p-4">
+        <Text className="text-3xl font-bold text-primary mb-2">
         Welcome Back
       </Text>
-      <Text style={styles.subtitle}>
+      <Text className="text-base text-gray-600 text-lg">
         Sign in to manage your njangi contribution groups
       </Text>
+      </View>
 
-      <View style={styles.inputfield}>
+      <View className="mt-4 pl-8">
         <Text style={styles.label}>Email</Text>
         <TextInput
           value={email}
@@ -64,7 +64,6 @@ export default function LoginScreen() {
       </TouchableOpacity>
     </KeyboardAvoidingView>
     </SafeAreaView>
-    </SafeAreaProvider>
   );
 }
 

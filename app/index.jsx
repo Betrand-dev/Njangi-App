@@ -2,10 +2,10 @@ import ButtonBrand from "@/components/ButtonBrand";
 import { router } from "expo-router";
 // import LottieView from "lottie-react-native";
 import React, { useRef, useState } from "react";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View , Text } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { Text } from "react-native-paper";
 import { AppTheme } from "./config/theme";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
@@ -57,7 +57,7 @@ const onBoardingScreen = () => {
     setCurrentIndex(index);
   };
   return (
-    <View style={styles.container}>
+    <SafeAreaView className="flex-1 bg-background">
       <FlatList
         ref={flatListRef}
         data={slides}
@@ -69,50 +69,27 @@ const onBoardingScreen = () => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
-          <View style={styles.slide}>
+          <View style={styles.slide} className="item-center p-12 justify-center align-center">
             {/* <LottieView source={item.animation} autoPlay style={{ height: 250 }} /> */}
-            <Text variant="headlineMedium" style={styles.title}>{item.title}</Text>
-            <Text style={styles.subtitle}>{item.subtitle}</Text>
+            <Text className="text-primary align-center font-bold text-3xl item-center">{item.title}</Text>
+            <Text className="text-gray-600 mt-4 text-lg">{item.subtitle}</Text>
           </View>
         )}
       />
-      <View style={styles.btn}>
+      <View className="p-4">
         <ButtonBrand
           text={currentIndex === slides.length - 1 ? "Get Started" : "Next"}
           fxn={handleNext}
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingLeft: 20,
-    paddingRight: 20,
-  },
   slide: {
     width,
     alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  title: {
-    fontWeight: "bold",
-    color: AppTheme.colors.primary,
-    marginTop: 20,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: "#555",
-    textAlign: "center",
-    marginTop: 10,
-    // padding: 20,
-  },
-  btn: {
-    marginBottom: 40,
   },
 });
 
