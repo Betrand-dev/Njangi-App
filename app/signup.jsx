@@ -1,157 +1,172 @@
-import { router } from "expo-router";
-import React, { useState } from "react";
-import { SafeAreaView, SafeAreaProvider  } from "react-native-safe-area-context";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  TextInput,
-  ScrollView
-} from "react-native";
-import { Ionicons} from "@expo/vector-icons";
-import { StatusBar } from "react-native";
-import { Button, Text } from "react-native-paper";
-import { AppTheme } from "./config/theme";
+import React, { useState,useRef } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, Text, View, TouchableOpacity, Alert , Dimensions} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import InputBrand from "@/components/InputBrand";
+import { FlatList } from "react-native-gesture-handler";
 import ButtonBrand from "@/components/ButtonBrand";
+import { router } from "expo-router";
 
-export default function SignupScreen() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+const { width } = Dimensions.get("window");
 
-  const handleSignup = () => {
-    // later: call your Flask backend or Firebase auth
-    console.log("creating account with", email, password);
+
+const SignupScreen = () => {
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+  });
+  const scrollViewRef = useRef(null);
+  const getItemLayout = (_, index) => ({
+    length: width,
+    offset: width * index,
+    index,
+  });
+
+  const steps = [
+  {
+    id: "1",
+    title: "Personal Info",
+    label1: "First Name",
+    label2: "Last Name",
+    inputType1: "text",
+    inputType2: "text",
+    placeholder1: "John",
+    placeholder2: "Deo",
+    field1: "firstName",
+    field2: "lastName",
+    value1: formData.firstName,
+    value2: formData.lastName,
+  },
+  {
+    id: "2",
+    title: "Contacts",
+    label1: "Email",
+    label2: "Phone",
+    inputType1: "text",
+    inputType2: "number",
+    placeholder1: "john@gmail.com",
+    placeholder2: "650537134",
+    field1: "email",
+    field2: "phone",
+    value1: formData.email,
+    value2: formData.phone,
+  },
+  {
+    id: "3",
+    title: "Sucurity",
+    label1: "Password",
+    label2: "Comfirm Password",
+    inputType1: "password",
+    inputType2: "password",
+    placeholder1: ".......",
+    placeholder2: ".......",
+    field1: "password",
+    field2: "confirmPassword",
+    value1: formData.password,
+    value2: formData.confirmPassword,
+  }
+];
+
+// update the form data
+const updateFormData = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+const progress = (currentStep / steps.length) * 100;
+
+const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      scrollViewRef.current.scrollToIndex({
+        index: currentStep + 1,
+        animated: true,
+      });
+    } else {
+      handleSignUp();
+    }
+  };
+
+  const handleScroll = (event) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+    setCurrentStep(index);
+  };
+
+  const handleSignUp = () => {
+    // Validate passwords match on final step
+    alert('Success', 'Account created successfully!', [
+      { text: 'OK', onPress: () => console.log('Navigate to home screen') }
+    ]);
+    console.log(formData);
     router.push("/home");
   };
 
+
+const validStep = () => {
+    const field1 = steps[currentStep].value1;
+    const field2 = steps[currentStep].value2;
+    if (field1 == '' && field2 == ''){
+    return true
+  }else if(field1 != '' && field2 == ''){
+    return true
+  }
+  else if(field1 == '' && field2 != ''){
+    return true
+  }else{
+    return false
+  }
+  };
+
+
   return (
-    <>
-    <StatusBar barStyle="light-content" backgroundColor="black" translucent />
-    <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-        <Text variant="headlineMedium">
-        <Ionicons style={{marginRight: 8}} name="arrow-back" size={30} color={AppTheme.colors.primary} onPress={() => router.push("/login")}/>
-        <Text style={styles.title}>Create Account</Text>
-      </Text>
+    <SafeAreaView className="flex-1 p-4  bg-background">
+      <View className="w-72 self-center mt-3 h-1 rounded-full bg-gray-300">
+        <View className="h-1 bg-primary rounded-full" style={{ width: `${progress}%` }}></View>
       </View>
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style = {{paddingLeft: 20, paddingRight: 20}}
-    >
-      
-      <ScrollView>
-      <Text style={styles.subtitle}>Join and manage your contributions</Text>
-      <View style={styles.inputfield}>
-        <Text style={styles.label}>Full Name</Text>
-        <TextInput
-          value={name}
-          onChange={setName}
-          style={styles.input}
-          placeholder="John deo"
-        />
-
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          value={email}
-          onChange={setEmail}
-          style={styles.input}
-          placeholder="example@gmail.com"
-        />
-
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          secureTextEntry
-          value={password}
-          onChange={setPassword}
-          style={styles.input}
-          placeholder="password"
-        />
-
-        <Text style={styles.label}>Confirm Password</Text>
-        <TextInput
-          secureTextEntry
-          value={confirmPassword}
-          onChange={setConfirmPassword}
-          style={styles.input}
-          placeholder="Confirm password"
-        />
-
+      <View>
+        <Text className="font-bold text-2xl p-4 text-primary">Create Account</Text>
       </View>
-      </ScrollView>
-
-      <View style={{marginTop: 50}}>
-        <ButtonBrand text="Sign up" fxn={handleSignup}/>
-      </View>
-
-      <TouchableOpacity onPress={() => router.push("/login")}>
-        <Text style={styles.link}>Already have an account? Login</Text>
-      </TouchableOpacity>
-    </KeyboardAvoidingView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView>
+          <FlatList 
+          ref={scrollViewRef}
+        data={steps}
+        horizontal
+        pagingEnabled
+        scrollEnabled={false}
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.id}
+        getItemLayout={getItemLayout}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        renderItem={({ item }) => (
+                  <View className="w-screen flex-1 px-6 pt-6">
+                <Text className="self-center font-semibold text-2xl text-primary">{item.title}</Text>
+                <Text className="ml-2 mb-2 font-bold text-gray-600 text-lg">{item.label1}</Text>
+                <InputBrand value={item.value1} onchange={(text) => updateFormData(item.field1, text)} placeholder={item.placeholder1} type={item.inputType1}/>
+                <Text className="ml-2 mb-2 font-bold text-gray-600 text-lg">{item.label2}</Text>
+                <InputBrand value={item.value2} onchange={(text) => updateFormData(item.field2, text)} placeholder={item.placeholder2} type={item.inputType2}/>
+              </View>
+                )}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <View className="p-4 mt-40">
+                  <ButtonBrand text={currentStep === steps.length - 1 ? 'Create Account' : 'Next'} fxn={handleNext} disabled={validStep()} />
+                  <TouchableOpacity className="mt-4" onPress={() => router.push("/login")}>
+                          <Text className="underline text-center font-semibold text-primary">Already have an account? Log in</Text>
+                        </TouchableOpacity>
+            </View>
     </SafeAreaView>
-    </>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // paddingLeft: 20,
-    // paddingRight: 20,
-    backgroundColor: AppTheme.colors.background,
-  },
-  header:{
-    // display: "flex",
-    // justifyContent: "center",
-    marginBottom: 20,
-    marginTop: 50,
-    paddingLeft: 10,
-    // paddingRight: 20,
-    borderRadius: 20,
-    // backgroundColor: "#f0f0f0",
-  },
-  title: {
-    fontWeight: "bold",
-    color: AppTheme.colors.primary,
-    paddingLeft: 50,
-    // alignSelf: "center",
-  },
-  subtitle: {
-    color: "#666",
-    marginBottom: 25,
-    // alignSelf: "center"
-  },
-  label: {
-    paddingRight: 20,
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 10,
-    color: "#686565ff",
-  },
-  input: {
-    marginBottom: 15,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 25,
-    paddingVertical: 18,
-    paddingHorizontal: 25,
-    fontSize: 16,
-    // paddingVertical: 5,
-  },
-  button: {
-    paddingVertical: 5,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-  link: {
-    color: AppTheme.colors.primary,
-    marginTop: 15,
-    textAlign: "center",
-    fontWeight: "650",
-    textDecorationLine: "underline",
-  },
-});
+export default SignupScreen;

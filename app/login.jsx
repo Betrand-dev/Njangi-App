@@ -1,116 +1,222 @@
-import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
+  View,
+  Text,
   TextInput,
   TouchableOpacity,
-  View,
-  Text
-} from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import ButtonBrand from "../components/ButtonBrand";
-import { AppTheme } from "./config/theme";
+  ScrollView,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 
-export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const LoginScreen = () => {
+  const [loginMethod, setLoginMethod] = useState('phone'); // 'phone' or 'username'
+  const [formData, setFormData] = useState({
+    phoneNumber: '',
+    username: '',
+    password: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = () => {
-    // later: call your Flask backend or Firebase auth
-    console.log("Logging in with", email, password);
-    router.push("/home");
+    const { phoneNumber, username, password } = formData;
+    
+    if (!password.trim()) {
+      Alert.alert('Error', 'Please enter your password');
+      return;
+    }
+
+    if (loginMethod === 'phone' && !phoneNumber.trim()) {
+      Alert.alert('Error', 'Please enter your phone number');
+      return;
+    }
+
+    if (loginMethod === 'username' && !username.trim()) {
+      Alert.alert('Error', 'Please enter your username');
+      return;
+    }
+
+    // Simulate login process
+    Alert.alert('Success', 'Login successful!', [
+      { text: 'OK', onPress: () => console.log('Navigate to home screen') }
+    ]);
+  };
+
+  const isFormValid = () => {
+    const { phoneNumber, username, password } = formData;
+    
+    if (!password.trim()) return false;
+    
+    if (loginMethod === 'phone') {
+      return phoneNumber.trim().length > 0;
+    } else {
+      return username.trim().length > 0;
+    }
+  };
+
+  const updateFormData = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
-    <SafeAreaView className="flex-1 p-4  bg-background">
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1 bg-white"
     >
-      <View className="p-4">
-        <Text className="text-3xl font-bold text-primary mb-2">
-        Welcome Back
-      </Text>
-      <Text className="text-base text-gray-600 text-lg">
-        Sign in to manage your njangi contribution groups
-      </Text>
-      </View>
+      <ScrollView 
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-1 px-6 pt-6">
+          {/* Header */}
+          <View className="mb-8">
+            <Text className="text-2xl font-bold text-gray-900 mb-2">
+              Hey, Welcome back!
+            </Text>
+            <Text className="text-base text-gray-600">
+              Choose your preferred option to sign in to your Ejara account.
+            </Text>
+          </View>
 
-      <View className="mt-4 pl-8">
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          value={email}
-          onChange={setEmail}
-          style={styles.input}
-          placeholder="example@gmail.com"
-        />
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          secureTextEntry
-          value={password}
-          onChange={setPassword}
-          style={styles.input}
-          placeholder="password"
-        />
-      </View>
+          {/* Login Method Selection */}
+          <View className="flex-row bg-gray-100 rounded-lg p-1 mb-6">
+            <TouchableOpacity
+              className={`flex-1 py-3 rounded-md ${
+                loginMethod === 'phone' ? 'bg-white shadow-sm' : ''
+              }`}
+              onPress={() => setLoginMethod('phone')}
+            >
+              <Text 
+                className={`text-center font-medium ${
+                  loginMethod === 'phone' ? 'text-blue-600' : 'text-gray-600'
+                }`}
+              >
+                Use a phone number
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`flex-1 py-3 rounded-md ${
+                loginMethod === 'username' ? 'bg-white shadow-sm' : ''
+              }`}
+              onPress={() => setLoginMethod('username')}
+            >
+              <Text 
+                className={`text-center font-medium ${
+                  loginMethod === 'username' ? 'text-blue-600' : 'text-gray-600'
+                }`}
+              >
+                Use a username
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-      <View style={{ marginTop: 250 }}>
-        <ButtonBrand text="Login" fxn={handleLogin} />
-      </View>
+          {/* Form */}
+          <View className="flex-1">
+            {/* Phone Number/Username Input */}
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                {loginMethod === 'phone' ? 'Your phone number' : 'Your username'}
+              </Text>
+              
+              {loginMethod === 'phone' ? (
+                <View className="flex-row items-center border border-gray-300 rounded-lg px-3 py-4 bg-white">
+                  <View className="flex-row items-center mr-3">
+                    <Text className="text-gray-700 text-base">+237</Text>
+                    <Text className="text-gray-400 ml-1">▼</Text>
+                  </View>
+                  <TextInput
+                    className="flex-1 text-base text-gray-800"
+                    placeholder="e.g., 6 98 09 45 78"
+                    placeholderTextColor="#9CA3AF"
+                    value={formData.phoneNumber}
+                    onChangeText={(text) => updateFormData('phoneNumber', text)}
+                    keyboardType="phone-pad"
+                  />
+                </View>
+              ) : (
+                <TextInput
+                  className="border border-gray-300 rounded-lg px-4 py-4 text-base text-gray-800 bg-white"
+                  placeholder="Enter your username"
+                  placeholderTextColor="#9CA3AF"
+                  value={formData.username}
+                  onChangeText={(text) => updateFormData('username', text)}
+                  autoCapitalize="none"
+                />
+              )}
+            </View>
 
-      <TouchableOpacity onPress={() => router.push("/signup")}>
-        <Text style={styles.link}>Dont't have an account? Sign up</Text>
-      </TouchableOpacity>
+            {/* Password Input */}
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-gray-700 mb-2">
+                Your password
+              </Text>
+              <View className="relative">
+                <TextInput
+                  className="border border-gray-300 rounded-lg px-4 py-4 text-base text-gray-800 bg-white pr-16"
+                  placeholder="Enter your password"
+                  placeholderTextColor="#9CA3AF"
+                  value={formData.password}
+                  onChangeText={(text) => updateFormData('password', text)}
+                  secureTextEntry={!showPassword}
+                />
+                <TouchableOpacity
+                  className="absolute right-4 top-4"
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Text className="text-blue-500 text-sm font-medium">
+                    {showPassword ? 'Hide' : 'Show'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Forgot Password */}
+            <TouchableOpacity className="mb-6">
+              <Text className="text-blue-500 text-sm font-medium">
+                Did you forget your password?
+              </Text>
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View className="flex-row items-center mb-6">
+              <View className="flex-1 h-px bg-gray-300" />
+            </View>
+          </View>
+
+          {/* Bottom Section */}
+          <View className="pb-8">
+            <TouchableOpacity
+              className={`py-4 rounded-lg ${
+                isFormValid() ? 'bg-blue-500' : 'bg-blue-300'
+              }`}
+              onPress={handleLogin}
+              disabled={!isFormValid()}
+            >
+              <Text className="text-white text-center font-semibold text-base">
+                Sign in
+              </Text>
+            </TouchableOpacity>
+
+            <View className="flex-row justify-center mt-4">
+              <Text className="text-gray-600 text-base">
+                Don't have an account?{' '}
+              </Text>
+              <TouchableOpacity>
+                <Text className="text-blue-500 text-base font-medium">
+                  Create an account
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
-    </SafeAreaView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "flex-start",
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 100,
-    backgroundColor: AppTheme.colors.background,
-  },
-  label: {
-    paddingRight: 20,
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 10,
-    color: "#686565ff",
-  },
-  title: {
-    fontWeight: "bold",
-    color: AppTheme.colors.primary,
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: "#666",
-    marginBottom: 20,
-  },
-  inputfield: {
-    marginTop: 20,
-  },
-  input: {
-    marginBottom: 15,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 25,
-    paddingVertical: 18,
-    paddingHorizontal: 25,
-    fontSize: 16,
-    // paddingVertical: 5,
-  },
-  link: {
-    color: AppTheme.colors.primary,
-    marginTop: 15,
-    textAlign: "center",
-    fontWeight: "650",
-    textDecorationLine: "underline",
-  },
-});
+export default LoginScreen;

@@ -4,7 +4,6 @@ import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import { Dimensions, StyleSheet, View , Text } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import { AppTheme } from "./config/theme";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
