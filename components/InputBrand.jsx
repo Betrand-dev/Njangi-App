@@ -36,6 +36,19 @@ const InputBrand = ({ value, onchange, placeholder,  type }) => {
       />
     );
   }
+  else if(type == 'textarea'){
+    return (
+      <TextInput
+        className="border  h-32  rounded-lg border-gray-300"
+        multiline = {true}
+        numberOfLines={6}
+        value={value}
+        onChangeText={onchange}
+        placeholderTextColor="#9CA3AF"
+        placeholder={placeholder ? placeholder : ""}
+      />
+    );
+  }
   else {
     return (
       <TextInput

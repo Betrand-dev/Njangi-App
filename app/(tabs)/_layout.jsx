@@ -1,10 +1,21 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 // import AppTheme from "../config/theme";
+import useRequireAuth from "../../hooks/useRequireAuth";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator } from "react-native";
 
-export default function TabLayout() {
+
+ function TabLayout() {
+  const { user, loading } = useRequireAuth();
+
   return (
-    <Tabs
+    loading ? (
+          <SafeAreaView className="flex-1 bg-background justify-center items-center">
+            <ActivityIndicator />
+          </SafeAreaView>
+        ) :(
+        <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#8f08fdde",
@@ -38,5 +49,8 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    )
   );
 }
+
+export default TabLayout;
