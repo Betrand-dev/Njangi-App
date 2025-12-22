@@ -17,6 +17,7 @@ import ButtonBrand from "../components/ButtonBrand";
 import InputBrand from "../components/InputBrand";
 import { AuthContext } from "./contexts/AuthContext";
 import api from "./services/api";
+import { ArrowLeftIcon } from 'lucide-react-native';
 
 const CreateGroup = () => {
   const { user } = useContext(AuthContext);
@@ -133,7 +134,10 @@ const CreateGroup = () => {
   return (
     <SafeAreaView className="flex-1 p-4 bg-background">
       {/* header */}
-      <View className="pt-5 pb-5 px-3 border-b border-gray-200">
+      <View className="pt-5 pb-5 px-3 border-b border-gray-200 flex flex-row">
+        <TouchableOpacity onPress={() => router.back()} className="mr-3">
+                <ArrowLeftIcon size={24} color="#374151" />
+              </TouchableOpacity>
         <Text className="text-xl font-semibold text-gray-700">
           Create group
         </Text>
@@ -372,11 +376,14 @@ const CreateGroup = () => {
                 fxn={handleCreationOfGroup}
               />
             )}
-            <TouchableOpacity>
-              <Text className="underline text-primary self-center font-semibold mt-2">
-                Cancel
-              </Text>
-            </TouchableOpacity>
+            <TouchableOpacity
+          className="mt-4"
+          onPress={() => router.push("/groups")}
+        >
+          <Text className="underline text-center font-semibold text-primary">
+            Cancel
+          </Text>
+        </TouchableOpacity>
           </View>
           {groupCode && (
             <View className="mt-4 p-4 bg-green-100 rounded-lg">
@@ -390,7 +397,7 @@ const CreateGroup = () => {
                 <Text className="text-white font-semibold">Copy Code</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => router.replace("/(tabs)/groups")}
+                onPress={() => router.replace("/groups")}
                 className="mt-2 p-2 bg-blue-500 rounded self-center"
               >
                 <Text className="text-white font-semibold">Go to Groups</Text>

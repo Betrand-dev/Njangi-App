@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { CircleArrowRight, Edit } from "lucide-react-native";
 import { useContext } from "react";
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,14 +12,28 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ModalBrand from "../../components/ModalBrand";
-import { AuthContext } from "../contexts/AuthContext";
 import useModal from "../../hooks/useModal";
 import useRequireAuth from "../../hooks/useRequireAuth";
+import { AuthContext } from "../contexts/AuthContext";
 
 const Profile = () => {
   const profileModal = useModal();
   const { user, loading } = useRequireAuth();
   const { logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: logout,
+      },
+    ]);
+  };
 
   const profile = user?.profile;
   return (
@@ -74,8 +89,8 @@ const Profile = () => {
 
         {/* logout button */}
         <TouchableOpacity
-          onPress={logout}
-          className="flex-row justify-center p-5 bg-red-500 rounded-xl mb-2"
+          onPress={handleLogout}
+          className="mt-12 flex-row justify-center p-5 bg-red-500 rounded-full mb-2"
         >
           <Text className="font-semibold text-lg text-white">Logout</Text>
         </TouchableOpacity>

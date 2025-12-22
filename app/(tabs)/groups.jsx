@@ -1,5 +1,5 @@
 import { Link } from "expo-router";
-import { PlusCircleIcon } from "lucide-react-native";
+import { PlusCircleIcon, RefreshCwIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -71,8 +71,7 @@ const Groups = () => {
       setCode(""); // Clear the input
       modal.hideModal(); // Close the modal
       // Refresh the groups list
-      const groupsResponse = await api.get("/groups");
-      setGroups(groupsResponse.data.groups || []);
+      await refreshGroups();
     } catch (error) {
       console.error("Join group error:", error);
       const errorMessage =
@@ -84,16 +83,42 @@ const Groups = () => {
     }
   };
 
+  const refreshGroups = async () => {
+    if (!user) return;
+    setGroupsLoading(true);
+    try {
+      const response = await api.get("/groups");
+      setGroups(response.data.groups || []);
+    } catch (error) {
+      console.error("Failed to refresh groups:", error);
+      Alert.alert("Error", "Failed to refresh groups");
+    } finally {
+      setGroupsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
-      <View className="flex-row items-center pt-5 pb-5 px-3 border-b border-gray-200  justify-between">
+      <View className="flex-row items-center pt-5 pb-5 px-3 border-b border-gray-200 justify-between">
         <View className="flex-row items-center space-x-2">
           <Text className="text-2xl font-semibold">Groups</Text>
         </View>
-        <Pressable onPress={modal.showModal}>
-          <PlusCircleIcon className="text-primary" color="#8f08fdde" />
-        </Pressable>
+        <View className="flex-row items-center gap-1 space-x-3">
+          <Pressable
+            onPress={refreshGroups}
+            disabled={groupsLoading}
+            className="mr-3"
+          >
+            <RefreshCwIcon
+              className={`text-primary ${groupsLoading ? "opacity-50" : ""}`}
+              color="#8f08fdde"
+            />
+          </Pressable>
+          <Pressable onPress={modal.showModal}>
+            <PlusCircleIcon className="text-primary" color="#8f08fdde" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Search and Filter Section */}
@@ -139,15 +164,12 @@ const Groups = () => {
         ) : filteredGroups.length > 0 ? (
           <View className="space-y-4">
             {filteredGroups.map((group) => (
-              <View className="mt-2" key={group.id}>
+              <View className="" key={group.id}>
                 <GroupTag
                   key={group.id}
+                  groupId={group.id}
                   groupName={group.name}
                   groupType={group.group_type || "njangi"}
-                  frequency={group.frequency}
-                  amount={group.contribution_amount}
-                  members={group.members?.length || 0}
-                  balance={group.balance}
                 />
               </View>
             ))}

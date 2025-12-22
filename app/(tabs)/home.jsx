@@ -1,4 +1,4 @@
-import { Bell, Eye, EyeOffIcon } from "lucide-react-native";
+import { Bell, Eye, EyeOffIcon, PlusCircleIcon, PiggyBank, Receipt, ArrowLeftRight } from "lucide-react-native";
 import React from "react";
 import {
   ActivityIndicator,
@@ -39,7 +39,7 @@ export default function WalletScreen() {
     ) : (
       <SafeAreaView className="flex-1 bg-background">
         {/* Header */}
-        <View className="flex-row items-center pt-5 pb-5 px-3 border-b border-gray-200  justify-between">
+        <View className="flex-row items-center   pt-8 pb-5 px-3 border-b border-gray-200  justify-between">
           <View className="flex-row items-center space-x-2">
             <View className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
               <Text className="font-bold text-gray-700">
@@ -47,7 +47,7 @@ export default function WalletScreen() {
                   (user?.profile?.lastName?.[0] || "B")}
               </Text>
             </View>
-            <Text className="text-lg font-semibold">
+            <Text className="ml-2 text-lg font-semibold">
               Hello{" "}
               <Text className="text-black">
                 {user?.profile?.firstName || user?.profile?.email || "User"}
@@ -64,9 +64,9 @@ export default function WalletScreen() {
           className="px-4 pt-2 space-y-6"
         >
           {/* transaction  */}
-          <View className="bg-gray-100 rounded-2xl p-12">
-            <Text className="text-gray-500 text-center font-bold">
-              Week Contribution
+          <View className="bg-gray-100 flex flex-row justify-between items-center rounded-2xl px-4 py-4">
+            <Text className="text-gray-500  font-bold">
+              Balance
             </Text>
             <View className="flex-row justify-center items-center mt-1">
               <Text className="text-gray-800 font-semibold mr-2">XAF</Text>
@@ -83,11 +83,39 @@ export default function WalletScreen() {
             </View>
           </View>
 
-          {/* trying */}
-          <View>
-            <TouchableOpacity onPress={load}>
-              <Text>load</Text>
+          {/* tryers */}
+          <View className="mt-3 flex flex-row justify-between items-center gap-1">
+            <TouchableOpacity className="flex flex-col w-1/2 px-8 py-4 justify-center items-center border rounded-lg border-gray-300">
+              <PiggyBank className="text-primary" color="#8f08fdde" />
+              <View className="mt-3 flex justify-center items-center">
+                <Text className="items-center font-light">Personal Savings</Text>
+              </View>
             </TouchableOpacity>
+             <TouchableOpacity className="flex flex-col px-8 py-4 w-1/2 justify-center items-center border rounded-lg border-gray-300">
+              <Receipt className="text-primary" color="#8f08fdde" />
+              <View className="mt-3 flex justify-center items-center">
+                <Text className="items-center font-light">Expense Tracking</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          {/* transactions */}
+          <View className="mt-4">
+            <TouchableOpacity className="flex flex-col px-4 py-6 w-full justify-center items-center border rounded-lg border-gray-300">
+              <ArrowLeftRight className="text-primary" color="#8f08fdde" />
+              <View className="mt-3 flex justify-center items-center">
+                <Text className="items-center font-light">Transactions</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Transaction history */}
+          <View className="mt-10">
+            <Text className="font-extrabold text-gray-600 text-xl">Transaction History</Text>
+            {/* Show atleast 3 recent transactions */}
+            <View className="flex justify-center items-center pt-20">
+              <ArrowLeftRight className="text-primary" color="#d1d5db" />
+              <Text className="text-xl text-gray-300">No-Transactions-Yet..</Text>
+            </View>
           </View>
 
           {/* notification Modal */}
