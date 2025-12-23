@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import ModalBrand from "../../components/ModalBrand";
 import useModal from "../../hooks/useModal";
 import useRequireAuth from "../../hooks/useRequireAuth";
+import { router } from "expo-router";
 
 export default function WalletScreen() {
   const [view, setView] = React.useState(false);
@@ -85,13 +86,19 @@ export default function WalletScreen() {
 
           {/* tryers */}
           <View className="mt-3 flex flex-row justify-between items-center gap-1">
-            <TouchableOpacity className="flex flex-col w-1/2 px-8 py-4 justify-center items-center border rounded-lg border-gray-300">
+            {/* personal savings */}
+            <TouchableOpacity className="flex flex-col w-1/2 px-8 py-4 justify-center items-center border rounded-lg border-gray-300"
+            onPress={() => router.push("/PersonalSavings")}
+            >
               <PiggyBank className="text-primary" color="#8f08fdde" />
               <View className="mt-3 flex justify-center items-center">
                 <Text className="items-center font-light">Personal Savings</Text>
               </View>
             </TouchableOpacity>
-             <TouchableOpacity className="flex flex-col px-8 py-4 w-1/2 justify-center items-center border rounded-lg border-gray-300">
+            {/* Expense tracking */}
+             <TouchableOpacity className="flex flex-col px-8 py-4 w-1/2 justify-center items-center border rounded-lg border-gray-300"
+             onPress={() => router.push("/ExpenseTracking")}
+             >
               <Receipt className="text-primary" color="#8f08fdde" />
               <View className="mt-3 flex justify-center items-center">
                 <Text className="items-center font-light">Expense Tracking</Text>
