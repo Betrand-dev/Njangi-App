@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { ArrowLeftIcon, PlusCircleIcon, TrendingUp } from "lucide-react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Pressable,
   ScrollView,
@@ -9,6 +9,7 @@ import {
   View,
   Platform,
   Alert,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ButtonBrand from "../components/ButtonBrand";
@@ -18,10 +19,13 @@ import useModal from "../hooks/useModal";
 import DateTimePicker from "react-native-modal-datetime-picker";
 import { AuthContext } from "./contexts/AuthContext";
 import api from "./services/api";
+import useRequireAuth from "../hooks/useRequireAuth";
 
 const PerdonalSavings = () => {
-  const { user } = useContext(AuthContext);
-    const [loading, setLoading] = useState(false);
+  const { user, loading: authLoading } = useRequireAuth();
+    const [sendLoading, setSendLoading] = useState(false);
+    const [profilesLoading, setProfilesLoading] = useState(false);
+    const [profiles, setProfiles] = useState([]);
   const modal = useModal();
   const [profileData, setProfileData] = useState({
     name: "",
@@ -36,13 +40,30 @@ const PerdonalSavings = () => {
     }));
   };
 
-  
+  useEffect(() => {
+    const fetchSavingProfiles = async () => {
+      
+      setProfilesLoading(true);
+      try {
+        const response = await api.get("/saving_profile");
+        console.log(response.data.profile);
+        setProfiles(response.data.profile || []);
+      }
+      catch (error) {
+        console.error("Failed to fetch groups:", error);
+      } finally {
+        setProfilesLoading(false);
+      }
+    };
+
+    fetchSavingProfiles()
+  }, [user]);
 
   // destructuring data
   const { name, goal, frequency, target_date } = profileData;
 
   const handleProfileCreation = async () => {
-    setLoading(true);
+    setSendLoading(true);
     const data = {
       name,
       goal,
@@ -57,7 +78,7 @@ const PerdonalSavings = () => {
       console.error(error);
       Alert.alert("Error", "Failed to create personal profile. Please try again.");
     } finally {
-      setLoading(false)
+      setSendLoading(false)
     }
   };
 
@@ -111,8 +132,20 @@ const PerdonalSavings = () => {
         </View>
 
         {/* different saving profile section */}
-
-        <View className="mt-10 ml-4">
+        {profilesLoading ? (
+          <View className="flex-1 justify-center items-center mt-40">
+            <ActivityIndicator size="large" color="#8f08fdde" />
+          </View>
+        ) : profiles.length > 0 ? (
+          profiles.map((profile) => (
+            <View key={profile.id}>
+              <Text>
+                {profile.name} - Target: {profile.goal_amount} - Frequency: {profile.frequency} 
+              </Text>
+            </View>
+          ))
+        ) : (
+          <View className="mt-10 ml-4">
           <Text className="font-extrabold text-gray-600 text-xl">Savings</Text>
           <View className="flex justify-center items-center pt-20">
             <TrendingUp className="text-primary" color="#d1d5db" />
@@ -121,6 +154,9 @@ const PerdonalSavings = () => {
             </Text>
           </View>
         </View>
+        )
+      }
+        {/* end of it */}
         {/* end of saving profile section */}
 
         {/* modal for creation activity */}

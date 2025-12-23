@@ -7,15 +7,24 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ButtonBrand from "../components/ButtonBrand";
 import InputBrand from "../components/InputBrand";
 import ModalBrand from "../components/ModalBrand";
 import useModal from "../hooks/useModal";
+import { AuthContext } from "./contexts/AuthContext";
+import api from "./services/api";
+import useRequireAuth from "../hooks/useRequireAuth";
 
 const ExpenseTracking = () => {
+    const { user, loading: authLoading } = useRequireAuth();
+    const [sendLoading, setSendLoading] = useState(false);
+    const [profilesLoading, setProfilesLoading] = useState(false);
+    const [profiles, setProfiles] = useState([]);
   const modal = useModal();
+
   const [profileData, setProfileData] = useState({
     name: "",
     description: "",
@@ -28,12 +37,45 @@ const ExpenseTracking = () => {
     }));
   };
 
-  const handleProfileCreation = () => {
-    console.log(`creating saving profile ${profileData.name}`);
-  };
+  useEffect(() => {
+    const fetchExpendsProfiles = async () => {
+      
+      setProfilesLoading(true);
+      try {
+        const response = await api.get("/expends_profile");
+        console.log(response.data.profile);
+        setProfiles(response.data.profile || []);
+      }
+      catch (error) {
+        console.error("Failed to fetch groups:", error);
+      } finally {
+        setProfilesLoading(false);
+      }
+    };
+
+    fetchExpendsProfiles()
+  }, [user]);
+
 
   // destructuring data
   const { name, description } = profileData;
+
+  const handleProfileCreation = async () => {
+    const data = {
+        name,
+        description,
+    }
+    setSendLoading(true);
+    try {
+      const response = await api.post("/expends_profile", data);
+      Alert.alert("Success", "Expenditure tracking profile Created successfully!");
+    } catch (error){
+      console.error(error);
+      Alert.alert("Error", "Failed to create profile. Please try again.");
+    } finally {
+      setSendLoading(false)
+    }
+  };
 
   const isFormValid = () => {
     return name.trim() !== "" && description.trim() !== "";
