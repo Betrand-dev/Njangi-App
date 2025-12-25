@@ -1,6 +1,6 @@
 import { router } from "expo-router";
-import { ArrowLeftIcon, CreditCard, PlusCircleIcon } from "lucide-react-native";
-import { useState } from "react";
+import { ArrowLeftIcon, CreditCard, PlusCircleIcon, RefreshCwIcon } from "lucide-react-native";
+import { useState, useEffect } from "react";
 import {
   Pressable,
   ScrollView,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ButtonBrand from "../components/ButtonBrand";
@@ -56,6 +57,21 @@ const ExpenseTracking = () => {
     fetchExpendsProfiles()
   }, [user]);
 
+   // refresh profiles
+  const refreshProfiles = async () => {
+    if (!user) return;
+    setProfilesLoading(true);
+    try {
+      const response = await api.get("/expends_profile");
+      setProfiles(response.data.profile || []);
+    } catch (error) {
+      console.error("Failed to refresh Profile:", error);
+      Alert.alert("Error", "Failed to refresh Profile");
+    } finally {
+      setProfilesLoading(false);
+    }
+  };
+
 
   // destructuring data
   const { name, description } = profileData;
@@ -94,7 +110,17 @@ const ExpenseTracking = () => {
             </Text>
           </View>
         </View>
-        <View>
+        <View className="flex-row items-center gap-1 space-x-3">
+          <Pressable
+          onPress={refreshProfiles}
+          disabled={profilesLoading}
+            className="mr-3"
+          >
+            <RefreshCwIcon
+              className={`text-primary ${profilesLoading ? "opacity-50" : ""}`}
+              color="#8f08fdde"
+            />
+          </Pressable>
           <Pressable onPress={modal.showModal}>
             <PlusCircleIcon className="text-primary" color="#8f08fdde" />
           </Pressable>
@@ -112,10 +138,39 @@ const ExpenseTracking = () => {
           </View>
         </View>
 
-        {/* different saving profile section */}
-
-        <View className="mt-10 ml-4">
+        
+        <View className="mt-10 ml-4 mb-4">
           <Text className="font-extrabold text-gray-600 text-xl">Tracking</Text>
+        </View>
+
+        {/* different saving profile section */}
+                {profilesLoading ? (
+                  <View className="flex-1 justify-center items-center mt-40">
+                    <ActivityIndicator size="large" color="#8f08fdde" />
+                    <Text>Loading..</Text>
+                  </View>
+                ) : profiles.length > 0 ? (
+                  profiles.map((profile) => (
+                <TouchableOpacity key={profile.id} className="bg-white border-b border-r border-l gap-2 border-gray-200 mx-3  py-4 px-2  flex flex-row justify-between items-center truncate"
+                onPress={() => router.push({ pathname: "/expense/[id]", params: { id: profile.id, name: profile.name, description: profile.description } })}
+                >
+              <View className="flex flex-row gap-1">
+                <View className="bg-primary/10 p-2 flex justify-center items-center rounded-full">
+                    <CreditCard size={28} className="text-primary" color="#8f08fdde" />
+                </View>
+                <View>
+                    <Text className="font-bold text-lg">
+                      {profile.name}
+                    </Text>
+                    <Text className="font-thin">
+                      {profile.description} 
+                    </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+                  ))
+                ) : (
+                  <View className="mt-10 ml-4">
           <View className="flex justify-center items-center pt-20">
             <CreditCard className="text-primary" color="#d1d5db" />
             <Text className="text-xl text-gray-300">
@@ -123,7 +178,10 @@ const ExpenseTracking = () => {
             </Text>
           </View>
         </View>
-        {/* end of saving profile section */}
+                )
+              }
+
+        {/* end of expense profile section */}
 
         {/* modal for creation activity */}
         <ModalBrand

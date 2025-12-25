@@ -1,5 +1,5 @@
-import { Bell, Eye, EyeOffIcon, PlusCircleIcon, PiggyBank, Receipt, ArrowLeftRight } from "lucide-react-native";
-import React from "react";
+import { Bell, Eye, EyeOffIcon, PlusCircleIcon, PiggyBank, Receipt, ArrowLeftRight, PlusIcon } from "lucide-react-native";
+import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,12 +14,17 @@ import ModalBrand from "../../components/ModalBrand";
 import useModal from "../../hooks/useModal";
 import useRequireAuth from "../../hooks/useRequireAuth";
 import { router } from "expo-router";
+import InputBrand from "../../components/InputBrand";
+import ButtonBrand from "../../components/ButtonBrand";
+import api from "../services/api";
 
 export default function WalletScreen() {
   const [view, setView] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const { user, loading } = useRequireAuth();
   const showNotification = useModal();
+  const depositModal = useModal();
+  const [depositAmount, setDepositAmount] = useState("")
   const load = () => {
     if (isLoading) {
       Alert.alert("trying", "chia what am i doiing", [
@@ -31,6 +36,45 @@ export default function WalletScreen() {
       setIsLoading(!isLoading);
     }
   };
+
+  useEffect(() => {
+    loading
+  }, [user])
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'XAF',
+    }).format(amount);
+  };
+
+  const isValid = () => {
+    return depositAmount.trim() == "";
+  }
+
+  const deposit = async () => {
+    const data = {
+      depositAmount
+    }
+    try{
+      const response = await api.post("/deposit", data)
+      Alert.alert("Deposit", "Successfull Deposit", [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Go Back",
+              style: "destructive",
+              onPress: router.push("/home"),
+            },
+          ]);
+    }catch(error) {
+      Alert.alert("error", "Failed to deposit");
+      console.error("deposit failed " + error);
+    }
+  }
+
   return (
     // while auth status is being determined, show a spinner
     loading ? (
@@ -70,9 +114,9 @@ export default function WalletScreen() {
               Balance
             </Text>
             <View className="flex-row justify-center items-center mt-1">
-              <Text className="text-gray-800 font-semibold mr-2">XAF</Text>
+              {/* <Text className="text-gray-800 font-semibold mr-2">XAF</Text> */}
               <Text className="text-2xl font-bold tracking-widest">
-                {view ? "5000" : "****"}
+                {view ? formatCurrency(user?.profile?.balance) : "******"}
               </Text>
               <Pressable className="ml-2" onPress={() => setView(!view)}>
                 {view ? (
@@ -82,6 +126,12 @@ export default function WalletScreen() {
                 )}
               </Pressable>
             </View>
+            <TouchableOpacity className="bg-primary/10 p-3 rounded-3xl flex flex-row justify-center items-center"
+            onPress={depositModal.showModal}
+            >
+              <PlusIcon color={"#8f08fdde"} size={16}/>
+              <Text className="text-primary font-medium">Deposit</Text>
+            </TouchableOpacity>
           </View>
 
           {/* tryers */}
@@ -133,6 +183,26 @@ export default function WalletScreen() {
             content={
               <View className="self-center mt-4">
                 <Text>Notificationn</Text>
+              </View>
+            }
+          />
+
+          {/* deposit modal */}
+          <ModalBrand
+            title="Deposit"
+            visible={depositModal.isVissible}
+            onrequestclose={depositModal.hideModal}
+            content={
+              <View className="">
+                <InputBrand 
+                value={depositAmount}
+                type={"number"}
+                placeholder={"Enter amount"}
+                onchange={(text) => setDepositAmount(text)}
+                />
+                <View>
+                  <ButtonBrand text={"Deposit"} fxn={deposit} disabled={isValid()}/>
+                </View>
               </View>
             }
           />

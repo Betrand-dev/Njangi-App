@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { ArrowLeftIcon, PlusCircleIcon, TrendingUp } from "lucide-react-native";
+import { ArrowLeftIcon, PlusCircleIcon, TrendingUp, RefreshCwIcon } from "lucide-react-native";
 import { useState, useEffect } from "react";
 import {
   Pressable,
@@ -82,6 +82,21 @@ const PerdonalSavings = () => {
     }
   };
 
+  // refresh profiles
+  const refreshProfiles = async () => {
+    if (!user) return;
+    setProfilesLoading(true);
+    try {
+      const response = await api.get("/saving_profile");
+      setProfiles(response.data.profile || []);
+    } catch (error) {
+      console.error("Failed to refresh Profile:", error);
+      Alert.alert("Error", "Failed to refresh Profile");
+    } finally {
+      setProfilesLoading(false);
+    }
+  };
+
   // returns true when form is valid (both name and goal present)
   const isFormValid = () => {
     return name.trim() !== "" && goal.trim() !== "" && frequency.trim() !== "";
@@ -97,6 +112,13 @@ const PerdonalSavings = () => {
       }
     };
 
+    const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'XAF',
+    }).format(amount);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       {/* Header */}
@@ -111,7 +133,17 @@ const PerdonalSavings = () => {
             </Text>
           </View>
         </View>
-        <View>
+        <View className="flex-row items-center gap-1 space-x-3">
+          <Pressable
+          onPress={refreshProfiles}
+          disabled={profilesLoading}
+            className="mr-3"
+          >
+            <RefreshCwIcon
+              className={`text-primary ${profilesLoading ? "opacity-50" : ""}`}
+              color="#8f08fdde"
+            />
+          </Pressable>
           <Pressable onPress={modal.showModal}>
             <PlusCircleIcon className="text-primary" color="#8f08fdde" />
           </Pressable>
@@ -132,21 +164,41 @@ const PerdonalSavings = () => {
         </View>
 
         {/* different saving profile section */}
+        <View className="mt-10 ml-4 mb-4">
+          <Text className="font-extrabold text-gray-600 text-xl">Savings</Text>
+        </View>
         {profilesLoading ? (
           <View className="flex-1 justify-center items-center mt-40">
             <ActivityIndicator size="large" color="#8f08fdde" />
+            <Text>Loading..</Text>
           </View>
         ) : profiles.length > 0 ? (
           profiles.map((profile) => (
-            <View key={profile.id}>
-              <Text>
-                {profile.name} - Target: {profile.goal_amount} - Frequency: {profile.frequency} 
-              </Text>
-            </View>
+            <TouchableOpacity key={profile.id} className="bg-white border-b border-r border-l gap-2 border-gray-200 mx-3  py-4 px-2  flex flex-row justify-between items-center"
+            onPress={() => router.push({ pathname: "/savings/[id]", params: { id: profile.id, name: profile.name, goal: profile.goal_amount, frequency: profile.frequency, date: profile.target_date } })}
+            >
+              <View className="flex flex-row gap-1">
+                <View className="bg-primary/10 p-2 flex justify-center items-center rounded-full">
+                    <TrendingUp size={28} className="text-primary" color="#8f08fdde" />
+                </View>
+                <View>
+                    <Text className="font-bold text-lg">
+                      {profile.name}
+                    </Text>
+                    <Text className="font-thin">
+                      Target: {formatCurrency(profile.goal_amount)} 
+                    </Text>
+                </View>
+              </View>
+              <View>
+                <Text className="font-light text-xl">
+                    {profile.frequency} 
+                  </Text>
+              </View>
+            </TouchableOpacity>
           ))
         ) : (
           <View className="mt-10 ml-4">
-          <Text className="font-extrabold text-gray-600 text-xl">Savings</Text>
           <View className="flex justify-center items-center pt-20">
             <TrendingUp className="text-primary" color="#d1d5db" />
             <Text className="text-xl text-gray-300">

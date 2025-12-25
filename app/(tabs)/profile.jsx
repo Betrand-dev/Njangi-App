@@ -52,11 +52,10 @@ const Profile = () => {
       <ScrollView className="space-y-6 pt-3 px-4 pb-4">
         {/* profile */}
         <View className="border border-primary rounded-2xl p-6">
-          <View className="bg-gray-300 w-32 h-32 rounded-full self-center">
-            <Image
-              source={require("../../assets/images/placeholder2.png")}
-              className="w-32 rounded-full h-32"
-            />
+          <View className="bg-primary/10 w-32 h-32 rounded-full self-center flex justify-center items-center">
+            <Text className="text-primary text-4xl">
+              {(profile?.firstName?.[0]) + (profile?.lastName?.[0])}.
+            </Text>
           </View>
           <View className="self-center mt-4">
             <Text className="text-center font-bold text-xl">
@@ -67,24 +66,39 @@ const Profile = () => {
         </View>
 
         {/* personal informations */}
-        <View className="mt-20">
-          <TouchableOpacity
-            onPress={profileModal.showModal}
-            className="flex-row justify-between p-5 bg-gray-200 rounded-xl mb-2 border-gray-400"
-          >
-            <Text className="font-semibold text-lg">Profile</Text>
-            <CircleArrowRight color="#8f08fdde" />
-          </TouchableOpacity>
-
-          <TouchableOpacity className="flex-row justify-between p-5 bg-gray-200 rounded-xl mb-2 border-gray-400">
-            <Text className="font-semibold text-lg">Dark Mode</Text>
-            <CircleArrowRight color="#8f08fdde" />
-          </TouchableOpacity>
-
-          <TouchableOpacity className="flex-row justify-between p-5 bg-gray-200 rounded-xl mb-2 border-gray-400">
-            <Text className="font-semibold text-lg">Invite Friend</Text>
-            <CircleArrowRight color="#8f08fdde" />
-          </TouchableOpacity>
+        <View className="mt-10  px-4 py-3 bg-white border border-gray-200 rounded-lg">
+          <View className="flex flex-row justify-between items-center border-b border-gray-200 p-3">
+            <Text className="text-gray-800 font-semibold text-lg">
+              First Name
+            </Text>
+            <Text className="text-gray-800 font-light text-lg">
+              {profile?.firstName}
+            </Text>
+          </View>
+          <View className="flex flex-row justify-between items-center border-b border-gray-200 p-3">
+            <Text className="text-gray-800 font-semibold text-lg">
+              Last Name
+            </Text>
+            <Text className="text-gray-800 font-light text-lg">
+              {profile?.lastName}
+            </Text>
+          </View>
+          <View className="flex flex-row justify-between items-center border-b border-gray-200 p-3">
+            <Text className="text-gray-800 font-semibold text-lg">
+              Email
+            </Text>
+            <Text className="text-gray-800 font-light">
+              {profile?.email}
+            </Text>
+          </View>
+          <View className="flex flex-row justify-between items-center  p-3">
+            <Text className="text-gray-800 font-semibold text-lg">
+              Phone Number
+            </Text>
+            <Text className="text-gray-800 font-light text-lg">
+              {profile?.phone}
+            </Text>
+          </View>
         </View>
 
         {/* logout button */}
@@ -97,7 +111,7 @@ const Profile = () => {
 
         {/* profile modal */}
         <ModalBrand
-          title="Profile"
+          title="Update Profile"
           visible={profileModal.isVissible}
           onrequestclose={profileModal.hideModal}
           content={
