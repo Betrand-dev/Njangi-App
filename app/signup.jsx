@@ -56,10 +56,10 @@ const SignupScreen = () => {
       title: "Contacts",
       label1: "Email",
       label2: "Phone",
-      inputType1: "text",
+      inputType1: "email",
       inputType2: "number",
       placeholder1: "john@gmail.com",
-      placeholder2: "650537134",
+      placeholder2: "+237 650537134",
       field1: "email",
       field2: "phone",
       value1: formData.email,
@@ -89,8 +89,6 @@ const SignupScreen = () => {
     }));
   };
 
-  const progress = (currentStep / steps.length) * 100;
-
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       scrollViewRef.current.scrollToIndex({
@@ -109,6 +107,11 @@ const SignupScreen = () => {
 
   const handleSignUp = async () => {
     setLoading(true);
+    if(formData.confirmPassword != formData.password){
+      Alert.alert("error", "Password do not match. Try again");
+      setLoading(false);
+      return
+    }
     try {
       // try to register via backend
       const { signup } = await import("./contexts/AuthContext").then((m) => m);
@@ -121,6 +124,7 @@ const SignupScreen = () => {
         phone: formData.phone,
         password: formData.password,
       });
+      
       Alert.alert("Success", "Account created");
       router.push("/login");
     } catch (err) {
@@ -156,18 +160,21 @@ const SignupScreen = () => {
       >
         {/* header */}
         <View>
-          <Text className="font-bold  text-2xl  text-primary">
+            <View
+              className="bg-primary rounded-lg flex flex-row justify-center items-center p-5 mt-4"
+            >
+              <Text className="text-white font-extrabold text-xl">
+                Signup
+              </Text>
+            </View>
+          
+          <View className="mt-8">
+            <Text className="font-bold  text-2xl  text-gray-800">
             Create Account
           </Text>
           <Text className="text-base text-gray-600">
-            Login To manage your njangi transactions
+            Join ncap To create and manage your njangi transactions
           </Text>
-          {/* progress bar */}
-          <View className="w-full mt-4  self-center  h-1 rounded-full bg-gray-300">
-            <View
-              className="h-1 bg-primary rounded-full"
-              style={{ width: `${progress}%` }}
-            ></View>
           </View>
         </View>
         <ScrollView>
@@ -185,16 +192,16 @@ const SignupScreen = () => {
             renderItem={({ item }) => (
               <View className="w-screen flex-1  pt-6">
                 {/* title */}
-                <Text className="mb-4 font-semibold text-2xl text-primary">
+                <Text className="mb-4 font-semibold text-2xl text-gray-800">
                   {item.title}
                 </Text>
                 {/* first label */}
-                <View className="p-6">
+                <View className="">
                   <Text className="ml-2 mb-2 font-bold text-gray-600 text-lg">
                     {item.label1}
                   </Text>
                   {/* first input field */}
-                  <View className="w-80">
+                  <View className="mr-8">
                     <InputBrand
                       value={item.value1}
                       onchange={(text) => updateFormData(item.field1, text)}
@@ -207,7 +214,7 @@ const SignupScreen = () => {
                     {item.label2}
                   </Text>
                   {/* second input field */}
-                  <View className="w-80">
+                  <View className="mr-8">
                     <InputBrand
                       value={item.value2}
                       onchange={(text) => updateFormData(item.field2, text)}
@@ -221,7 +228,7 @@ const SignupScreen = () => {
           />
         </ScrollView>
       </KeyboardAvoidingView>
-      <View className="bottom-4">
+      <View className="mb-4">
         {loading ? (
           <ActivityIndicator size="large" color="#8f08fdde" />
         ) : (

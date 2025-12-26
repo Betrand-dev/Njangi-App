@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import { CircleArrowRight, Edit } from "lucide-react-native";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -9,17 +9,66 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ModalBrand from "../../components/ModalBrand";
 import useModal from "../../hooks/useModal";
 import useRequireAuth from "../../hooks/useRequireAuth";
 import { AuthContext } from "../contexts/AuthContext";
+import InputBrand from "../../components/InputBrand";
+import ButtonBrand from "../../components/ButtonBrand";
+import api from "../services/api";
+import { router } from "expo-router";
 
 const Profile = () => {
   const profileModal = useModal();
   const { user, loading } = useRequireAuth();
   const { logout } = useContext(AuthContext);
+  const [userData, setUserData] = useState({
+    firstName: user?.profile?.firstName,
+    lastName: user?.profile.lastName,
+    email: user?.profile?.email,
+    phone: user?.profile?.phone
+  });
+  const [isLoading, setIsLoading] = useState(false)
+
+  const updateUserInfo = async () => {
+    const data = {
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      phone: userData.phone
+    }
+
+    setIsLoading(true);
+
+    try{
+      const response = await api.post("/update", data);
+      Alert.alert("Update", "Information Updated. you are required to login", [
+                  {
+                    text: "ok",
+                    style: "destructive",
+                    onPress: logout,
+                  },
+                ]);
+    }
+    catch(error){
+      Alert.alert("Update","Failed to Update info")
+    }
+    finally{
+      setIsLoading(false)
+    }
+  }
+
+
+   const updateUserData = (field, value) => {
+    setUserData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -33,6 +82,18 @@ const Profile = () => {
         onPress: logout,
       },
     ]);
+  };
+
+  const isFormValid = () => {
+    // destructuring email and password from formData
+    const { firstName, lastName, email, phone } = userData;
+
+    // basic validation
+    if (firstName.trim() !== "" && lastName.trim() !== "" && email.trim() !== "" && phone.trim() !== "") {
+      return false;
+    }
+
+    return true;
   };
 
   const profile = user?.profile;
@@ -116,7 +177,45 @@ const Profile = () => {
           onrequestclose={profileModal.hideModal}
           content={
             <View>
-              <Text>hello world</Text>
+              <Text className="text-gray-600 text-lg ml-2 mb-2">First Name</Text>
+              <InputBrand 
+              value={userData.firstName}
+              onchange={(text) => updateUserData("firstName",text)}
+              placeholder={"First Name"}
+              type={"text"}
+              />
+              <Text className="text-gray-600 text-lg ml-2 mb-2">Last Name</Text>
+              <InputBrand 
+              value={userData.lastName}
+              onchange={(text) => updateUserData("lastName",text)}
+              placeholder={"Last Name"}
+              type={"text"}
+              />
+              <Text className="text-gray-600 text-lg ml-2 mb-2">Email</Text>
+              <InputBrand 
+              value={userData.email}
+              onchange={(text) => updateUserData("email",text)}
+              placeholder={"Email"}
+              type={"email"}
+              />
+              <Text className="text-gray-600 text-lg ml-2 mb-2">Phone Number</Text>
+              <InputBrand 
+              value={userData.phone}
+              onchange={(text) => updateUserData("phone",text)}
+              placeholder={"Phone Number"}
+              type={"number"}
+              />
+              <View>
+                {isLoading ? (
+                  <ActivityIndicator size="large" color="#8f08fdde" />
+                ): (
+                  <ButtonBrand 
+                  text={"Update"} 
+                  fxn={() => {updateUserInfo()}} 
+                  disabled={isFormValid() || isLoading}
+                  />
+                )}
+              </View>
             </View>
           }
         />

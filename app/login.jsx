@@ -68,8 +68,11 @@ const LoginScreen = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
-          <View>
+          <View className="">
             {/* Header */}
+            <View className="flex flex-row justify-center items-center bg-primary rounded-lg p-5 mb-10">
+              <Text className="text-white font-extrabold text-xl">Login</Text>
+            </View>
             <View className="mb-8">
               <Text className="text-2xl font-bold text-gray-900 mb-2">
                 Hey, Welcome back!
@@ -80,7 +83,7 @@ const LoginScreen = () => {
             </View>
 
             {/* Form */}
-            <View className="mt-24">
+            <View className="">
               <Text className="ml-2 mb-2 font-bold text-gray-600 text-lg">
                 Email
               </Text>

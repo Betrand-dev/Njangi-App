@@ -1,4 +1,3 @@
-import { Clipboard } from "expo-clipboard";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
 import {
@@ -10,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Clipboard
 } from "react-native";
 import DateTimePicker from "react-native-modal-datetime-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,6 +18,8 @@ import InputBrand from "../components/InputBrand";
 import { AuthContext } from "./contexts/AuthContext";
 import api from "./services/api";
 import { ArrowLeftIcon } from 'lucide-react-native';
+import ModalBrand from "../components/ModalBrand";
+import useModal from "../hooks/useModal";
 
 const CreateGroup = () => {
   const { user } = useContext(AuthContext);
@@ -35,6 +37,8 @@ const CreateGroup = () => {
     description: "",
     contributionTime: new Date(),
   });
+
+  const modal = useModal()
 
   const updateGroupData = (field, value) => {
     setGroupData((prev) => ({
@@ -104,6 +108,13 @@ const CreateGroup = () => {
     return true;
   };
 
+  const copyGroupCode =  async () => {
+      if (groupCode) {
+        await Clipboard.setString(groupCode);
+        Alert.alert('Success', 'Group code copied to clipboard!');
+      }
+    };
+
   const handleCreationOfGroup = async () => {
     setLoading(true);
     const data = {
@@ -121,7 +132,24 @@ const CreateGroup = () => {
     try {
       const response = await api.post("/groups", data);
       setGroupCode(response.data.group_code);
-      Alert.alert("Success", "Group created successfully!");
+      console.log(response.data.group_code);
+      Alert.alert("Group",`Group created. share the group code "${response.data.group_code}" to add members`,[
+        {
+          text: "copy code",
+          style: "destructive",
+          onPress: () => {
+            copyGroupCode();
+            router.replace("/groups")
+          }
+        },
+        {
+          text: "ok",
+          style: "destructive",
+          onPress: () => {
+            router.replace("/groups")
+          }
+        },
+      ])
       // Don't navigate immediately, let user see the code
     } catch (error) {
       console.error(error);
@@ -147,22 +175,25 @@ const CreateGroup = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView>
-          <View className="flex flex-row items-center gap-4 mt-4">
+          <View className="flex flex-row items-center gap-4 mt-4 bg-white p-3 border border-gray-200 rounded-lg">
             <View className="bg-gray-200 h-16 w-16 rounded-full flex items-center justify-center">
               <Text className="font-bold text-gray-700">
                 {(groupName?.[0]?.toUpperCase() || "") +
                   (groupName?.[1]?.toUpperCase() || "")}
               </Text>
             </View>
-            <TouchableOpacity className="px-2 py-4  border-b-2 w-64 border-gray-300">
+            <TouchableOpacity className="px-2 py-4  w-64 border-gray-300">
               <Text className="text-md text-gray-500 font-semibold">
                 {(groupName ? groupName : "") +
-                  (type ? ` • ${type}` : "") +
-                  (frequency ? ` • ${frequency}` : "") +
-                  (amount ? ` • ${amount}FCFA` : "") +
-                  (startDate ? ` • ${startDate.toDateString()}` : "") +
-                  (endDate ? ` - ${endDate.toDateString()}` : "") +
-                  (maxMembers ? ` • ${maxMembers} members` : "")}
+                (frequency ? ` • ${frequency}` : "") +
+                (amount ? ` • ${amount}FCFA` : "") +
+                  (type ? ` • ${type}` : "")}
+              </Text>
+              <Text className="text-md text-gray-500 font-semibold">
+                Start: {(startDate ? `${startDate.toDateString()}` : "")}
+              </Text>
+              <Text className="text-md text-gray-500 font-semibold">
+                Max-member: {(maxMembers ? `${maxMembers} members` : "")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -378,32 +409,13 @@ const CreateGroup = () => {
             )}
             <TouchableOpacity
           className="mt-4"
-          onPress={() => router.push("/groups")}
+          onPress={() => router.replace("/groups")}
         >
           <Text className="underline text-center font-semibold text-primary">
             Cancel
           </Text>
         </TouchableOpacity>
           </View>
-          {groupCode && (
-            <View className="mt-4 p-4 bg-green-100 rounded-lg">
-              <Text className="text-lg font-semibold text-center">
-                Group Code: {groupCode}
-              </Text>
-              <TouchableOpacity
-                onPress={() => Clipboard.setStringAsync(groupCode)}
-                className="mt-2 p-2 bg-primary rounded self-center"
-              >
-                <Text className="text-white font-semibold">Copy Code</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.replace("/groups")}
-                className="mt-2 p-2 bg-blue-500 rounded self-center"
-              >
-                <Text className="text-white font-semibold">Go to Groups</Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

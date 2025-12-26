@@ -86,9 +86,6 @@ export default function GroupDetailsPage() {
       const groupData = groupResponse.data.group;
       const membersData = groupResponse.data.members;
 
-      console.log('Group data:', groupData);
-      console.log('Members data:', membersData);
-
       setGroup(groupData);
       setMembers(membersData);
 
@@ -165,9 +162,9 @@ export default function GroupDetailsPage() {
           onPress: async () => {
             setActionLoading(true);
             try {
-              await api.delete(`/groups/${id}`);
+              await api.delete(`/delete_group/${id}`);
               Alert.alert('Success', 'Group deleted successfully');
-              router.replace('/(tabs)/groups'); // Go back to groups list
+              router.replace('/groups'); // Go back to groups list
             } catch (error: any) {
               console.error('Failed to delete group:', error);
               Alert.alert('Error', 'Failed to delete group');
@@ -205,6 +202,10 @@ export default function GroupDetailsPage() {
         {
           text: 'Contribute',
           onPress: async () => {
+            if(user?.profile?.balance < group.contribution_amount){
+              Alert.alert("Contribution", "Insufficeint Funds. Please make a deposit and Try again");
+              return
+            }
             setActionLoading(true);
             try {
               await api.post(`/groups/${id}/contributions`, {

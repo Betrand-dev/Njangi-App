@@ -162,7 +162,7 @@ const Groups = () => {
             <ActivityIndicator size="large" color="#8f08fdde" />
           </View>
         ) : filteredGroups.length > 0 ? (
-          <View className="space-y-4">
+          <View className="space-y-8 mb-10">
             {filteredGroups.map((group) => (
               <View className="" key={group.id}>
                 <GroupTag

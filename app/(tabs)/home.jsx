@@ -1,4 +1,4 @@
-import { Bell, Eye, EyeOffIcon, PlusCircleIcon, PiggyBank, Receipt, ArrowLeftRight, PlusIcon } from "lucide-react-native";
+import { Bell, Eye, EyeOffIcon, RefreshCwIcon, PiggyBank, Receipt, ArrowLeftRight, PlusIcon } from "lucide-react-native";
 import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
@@ -24,21 +24,27 @@ export default function WalletScreen() {
   const { user, loading } = useRequireAuth();
   const showNotification = useModal();
   const depositModal = useModal();
-  const [depositAmount, setDepositAmount] = useState("")
-  const load = () => {
-    if (isLoading) {
-      Alert.alert("trying", "chia what am i doiing", [
-        { text: "Cancel", style: "cancel" },
-        { text: "discard", onPress: () => setIsLoading(!isLoading) },
-      ]);
-    } else {
-      alert("did not work");
-      setIsLoading(!isLoading);
-    }
-  };
+  const [depositAmount, setDepositAmount] = useState("");
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [balance, setBalance] = useState([]);
+
 
   useEffect(() => {
-    loading
+    const getBalance = async () => {
+      if (!user) return;
+        setBalanceLoading(true)
+        try{
+          const response = await api.get("/deposit")
+          setBalance(response.data.balance || []);
+        }
+        catch(error){
+          console.error("failed to get balance " + error)
+        }
+        finally{
+          setBalanceLoading(false)
+        }
+    }
+    getBalance()
   }, [user])
 
   const formatCurrency = (amount) => {
@@ -66,7 +72,10 @@ export default function WalletScreen() {
             {
               text: "Go Back",
               style: "destructive",
-              onPress: router.push("/home"),
+              onPress: async () => {
+                depositModal.hideModal();
+                await refresh();
+              },
             },
           ]);
     }catch(error) {
@@ -74,6 +83,21 @@ export default function WalletScreen() {
       console.error("deposit failed " + error);
     }
   }
+
+  const refresh = async () => {
+        if (!user) return;
+        setBalanceLoading(true)
+        try{
+          const response = await api.get("/deposit")
+          setBalance(response.data.balance || []);
+        }
+        catch(error){
+          console.error("failed to get balance " + error)
+        }
+        finally{
+          setBalanceLoading(false)
+        }
+      };
 
   return (
     // while auth status is being determined, show a spinner
@@ -100,9 +124,21 @@ export default function WalletScreen() {
               👋
             </Text>
           </View>
-          <TouchableOpacity onPress={showNotification.showModal}>
+          <View className="flex-row items-center gap-1 space-x-3">
+            <Pressable
+            onPress={refresh}
+            disabled={balanceLoading}
+            className="mr-3"
+            >
+            <RefreshCwIcon
+            className={`text-primary ${balanceLoading ? "opacity-50" : ""}`}
+            color="#8f08fdde"
+            />
+            </Pressable>
+            <TouchableOpacity onPress={showNotification.showModal}>
             <Bell className="text-primary" color="#8f08fdde" />
           </TouchableOpacity>
+          </View>
         </View>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -115,8 +151,13 @@ export default function WalletScreen() {
             </Text>
             <View className="flex-row justify-center items-center mt-1">
               {/* <Text className="text-gray-800 font-semibold mr-2">XAF</Text> */}
-              <Text className="text-2xl font-bold tracking-widest">
-                {view ? formatCurrency(user?.profile?.balance) : "******"}
+              {balanceLoading ? (
+                  <ActivityIndicator size="small" color="#8f08fdde" />
+                ) : (
+                  balance.length > 0 ? (
+                <View className="flex-row justify-center items-center">
+                  <Text className="text-xl font-bold tracking-widest">
+                {view ? formatCurrency(balance[0]) : "******"}
               </Text>
               <Pressable className="ml-2" onPress={() => setView(!view)}>
                 {view ? (
@@ -125,6 +166,11 @@ export default function WalletScreen() {
                   <EyeOffIcon size={18} color="gray" />
                 )}
               </Pressable>
+                </View>
+                  ) : (
+                    <Text>Failed</Text>
+                  )
+                )}
             </View>
             <TouchableOpacity className="bg-primary/10 p-3 rounded-3xl flex flex-row justify-center items-center"
             onPress={depositModal.showModal}
@@ -157,7 +203,9 @@ export default function WalletScreen() {
           </View>
           {/* transactions */}
           <View className="mt-4">
-            <TouchableOpacity className="flex flex-col px-4 py-6 w-full justify-center items-center border rounded-lg border-gray-300">
+            <TouchableOpacity className="flex flex-col px-4 py-6 w-full justify-center items-center border rounded-lg border-gray-300"
+            onPress={refresh}
+            >
               <ArrowLeftRight className="text-primary" color="#8f08fdde" />
               <View className="mt-3 flex justify-center items-center">
                 <Text className="items-center font-light">Transactions</Text>

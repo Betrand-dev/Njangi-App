@@ -15,7 +15,9 @@ const SavingDetail = () => {
     const { user, loading: authLoading } = useRequireAuth();
     const [savingLoading, setSavingLoading] = useState(false);
     const [saves, setSaves] = useState([]);
+    const [totalSavings, setTotalSavings] = useState([]);
     const [sendLoading, setSendLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
     const modal = useModal();
     const infoModal = useModal();
     const [amount, setAmount] = useState({
@@ -42,8 +44,8 @@ const SavingDetail = () => {
       setSavingLoading(true);
       try {
         const response = await api.get(`/savings/${id}`);
-        console.log(response.data.saves);
         setSaves(response.data.saves || []);
+        setTotalSavings(response.data.total_savings || [])
       }
       catch (error) {
         console.error("Failed to fetch saves:", error);
@@ -61,7 +63,7 @@ const SavingDetail = () => {
       setSavingLoading(true);
       try {
         const response = await api.get(`/savings/${id}`);
-        setExpenses(response.data.saves || []);
+        setSaves(response.data.saves || []);
       } catch (error) {
         console.error("Failed to refresh saves:", error);
         Alert.alert("Error", "Failed to refresh saves");
@@ -100,6 +102,34 @@ const {value} = amount;
   const isValid = () => {
     return value.trim() == ""
   }
+
+
+    const deleteProfile = async () => {
+      Alert.alert(
+        'Delete Profile',
+        'Are you sure you want to delete this profile? This action cannot be undone and all data will be lost.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              setActionLoading(true);
+              try {
+                await api.delete(`/delete_saving_profile/${id}`);
+                Alert.alert('Success', 'Profile deleted successfully');
+                router.replace('/PersonalSavings'); // Go back to profile list
+              } catch (error) {
+                console.error('Failed to delete Profile:', error);
+                Alert.alert('Error', 'Failed to delete Profile');
+              } finally {
+                setActionLoading(false);
+              }
+            }
+          }
+        ]
+      );
+    };
 
 
   return (
@@ -141,7 +171,7 @@ const {value} = amount;
                     Target-Amount: 
                 </Text>
                 <Text>
-                    {formatCurrency(goal)}
+                    {formatCurrency(goal)}-
                 </Text>
             </View>
             <View className="flex flex-row justify-between items-center border-b border-gray-200 p-2">
@@ -149,7 +179,7 @@ const {value} = amount;
                     Amount-Saved: 
                 </Text>
                 <Text>
-                    0
+                    {formatCurrency(totalSavings?.total_savings)}-
                 </Text>
             </View>
             <View className="flex flex-row justify-between items-center border-b border-gray-200 p-2">
@@ -244,7 +274,7 @@ const {value} = amount;
               </Text>
             </View>
             <View>
-              <Pressable className="rounded-lg bg-red-600 p-2">
+              <Pressable className="rounded-lg bg-red-600 p-2" onPress={deleteProfile} disabled={actionLoading}>
                 <Text className="text-white text-center text-lg font-bold">Delete Profile</Text>
               </Pressable>
             </View>

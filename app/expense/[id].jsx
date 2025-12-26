@@ -16,9 +16,11 @@ const ExpenceDetail = () => {
     const { user, loading: authLoading } = useRequireAuth();
     const [expenseLoading, setExpenseLoading] = useState(false);
     const [expenses, setExpenses] = useState([]);
+    const [totalExpenses, setTotalExpenses] = useState([]);
     const modal = useModal();
     const infoModal = useModal();
     const [sendLoading, setSendLoading] = useState(false);
+        const [actionLoading, setActionLoading] = useState(false);
     const [expenseData, setExpenseData] = useState({
         item: "",
         describe: "",
@@ -33,8 +35,8 @@ const ExpenceDetail = () => {
       setExpenseLoading(true);
       try {
         const response = await api.get(`/expend/${id}`);
-        console.log(response.data.expense);
         setExpenses(response.data.expense || []);
+        setTotalExpenses(response.data.total_expenses || [])
       }
       catch (error) {
         console.error("Failed to fetch expense:", error);
@@ -105,6 +107,33 @@ const ExpenceDetail = () => {
     }).format(amount);
   };
 
+  const deleteProfile = async () => {
+      Alert.alert(
+        'Delete Profile',
+        'Are you sure you want to delete this profile? This action cannot be undone and all data will be lost.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              setActionLoading(true);
+              try {
+                await api.delete(`/delete_expense_profile/${id}`);
+                Alert.alert('Success', 'Profile deleted successfully');
+                router.replace('/ExpenseTracking'); // Go back to profile list
+              } catch (error) {
+                console.error('Failed to delete Profile:', error);
+                Alert.alert('Error', 'Failed to delete Profile');
+              } finally {
+                setActionLoading(false);
+              }
+            }
+          }
+        ]
+      );
+    };
+
   return (
     <SafeAreaView className="flex-1 bg-background">
         {/* Header */}
@@ -141,10 +170,10 @@ const ExpenceDetail = () => {
         <View className="mx-4 mt-4 border border-gray-200 bg-white rounded-lg px-4 py-4">
             <View className="flex flex-row justify-between items-center border-b border-gray-200 p-2">
                 <Text>
-                    Total-Spend: 
+                    Total-Expenditures: 
                 </Text>
                 <Text>
-                    0
+                    {formatCurrency(totalExpenses?.total_expenses)}-
                 </Text>
             </View>
             <View className="mt-2">
@@ -258,7 +287,7 @@ const ExpenceDetail = () => {
               </View>
             </View>
             <View>
-              <Pressable className="rounded-lg bg-red-600 p-2">
+              <Pressable className="rounded-lg bg-red-600 p-2" onPress={deleteProfile} disabled={actionLoading}>
                 <Text className="text-white font-bold text-xl text-center">Delete Profile</Text>
               </Pressable>
             </View>

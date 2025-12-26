@@ -44,7 +44,6 @@ const ExpenseTracking = () => {
       setProfilesLoading(true);
       try {
         const response = await api.get("/expends_profile");
-        console.log(response.data.profile);
         setProfiles(response.data.profile || []);
       }
       catch (error) {
