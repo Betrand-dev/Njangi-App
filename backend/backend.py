@@ -643,6 +643,39 @@ def update_user_info():
     return jsonify({"message": "user info updated"}), 200
 
 
+@app.route("/delete_account", methods=["DELETE"])
+@jwt_required()
+def delete_account():
+    identity = get_jwt_identity()
+    user = fetch_one("SELECT id FROM users WHERE id = %s", (identity,))
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    user_id = user["id"]
+
+    cnx = get_db()
+    cur = cnx.cursor()
+    try:
+        cnx.start_transaction()
+        # Delete related data first to avoid foreign key issues
+        cur.execute("DELETE FROM notifications WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM contributions WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM group_members WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM savings_profiles WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM expense_trackings WHERE user_id = %s", (user_id,))
+        cur.execute("DELETE FROM savings_contributions WHERE profile_id IN (SELECT id FROM savings_profiles WHERE user_id = %s)", (user_id,))
+        cur.execute("DELETE FROM expenses WHERE tracking_id IN (SELECT id FROM expense_trackings WHERE user_id = %s)", (user_id,))
+        # Delete the user
+        cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        cnx.commit()
+    except Exception as e:
+        cnx.rollback()
+        return jsonify({"message": "Failed to delete account", "error": str(e)}), 500
+    finally:
+        cur.close()
+        cnx.close()
+
+    return jsonify({"message": "Account deleted successfully"}), 200
+
 
 @app.route("/groups/<int:group_id>/contributions", methods=["GET"])
 @jwt_required()
@@ -688,7 +721,7 @@ def list_notifications():
     cnx = get_db()
     cur = cnx.cursor(dictionary=True)
     try:
-        cur.execute("SELECT id, group_id, actor_id, type, payload, read_at, created_at FROM notifications WHERE user_id = %s ORDER BY created_at DESC LIMIT 100", (user_id,))
+        cur.execute("SELECT n.id, n.group_id, g.name as group_name, n.actor_id, n.type, n.payload, n.read_at, n.created_at FROM notifications n LEFT JOIN groups g ON n.group_id = g.id WHERE n.user_id = %s ORDER BY n.created_at DESC LIMIT 100", (user_id,))
         rows = cur.fetchall()
     finally:
         cur.close()

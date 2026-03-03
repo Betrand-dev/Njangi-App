@@ -7,7 +7,7 @@ import axios from "axios";
 // - Android emulator: http://10.0.2.2:5000  
 // - iOS simulator: http://127.0.0.1:5000
 // - Physical device: your machine's IP (run `ipconfig` on Windows to find it)
-export const BASE_URL = "http://192.168.236.203:5000"; // <-- Try this if running on same machine
+export const BASE_URL = "http://192.168.45.203:5000"; // <-- Try this if running on same machine
 //export const BASE_URL = "http://127.0.0.1:5000"; // <-- update to your backend
 
 const api = axios.create({

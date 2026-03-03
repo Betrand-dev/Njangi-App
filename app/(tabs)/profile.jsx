@@ -1,7 +1,7 @@
-import { Image } from "expo-image";
-import { CircleArrowRight, Edit } from "lucide-react-native";
+import { ChevronRight, Edit } from "lucide-react-native";
 import { useContext, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Pressable,
   ScrollView,
@@ -9,66 +9,80 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ButtonBrand from "../../components/ButtonBrand";
+import InputBrand from "../../components/InputBrand";
 import ModalBrand from "../../components/ModalBrand";
 import useModal from "../../hooks/useModal";
 import useRequireAuth from "../../hooks/useRequireAuth";
 import { AuthContext } from "../contexts/AuthContext";
-import InputBrand from "../../components/InputBrand";
-import ButtonBrand from "../../components/ButtonBrand";
 import api from "../services/api";
-import { router } from "expo-router";
 
 const Profile = () => {
   const profileModal = useModal();
+  const widthrawal = useModal();
+  // handles withdrawal
+  const [withdrawalAmount, setwithdrawalAmount] = useState("");
+  const isValid = () => {
+    return withdrawalAmount.trim() == "";
+  };
+  const withdraw = async () => {
+    const data = {
+      withdrawalAmount,
+    };
+    try {
+      const response = await api.post("/withdrawal", data);
+      console.log(response.data.message);
+      Alert.alert("Withrawal",response.data.message);
+    } catch (error) {
+      Alert.alert("Withdrawal","Transaction Failed");
+      console.error("deposit failed " + error);
+    }
+  };
+  //end of withdrawal
   const { user, loading } = useRequireAuth();
   const { logout } = useContext(AuthContext);
   const [userData, setUserData] = useState({
     firstName: user?.profile?.firstName,
     lastName: user?.profile.lastName,
     email: user?.profile?.email,
-    phone: user?.profile?.phone
+    phone: user?.profile?.phone,
   });
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const updateUserInfo = async () => {
     const data = {
       firstName: userData.firstName,
       lastName: userData.lastName,
       email: userData.email,
-      phone: userData.phone
-    }
+      phone: userData.phone,
+    };
 
     setIsLoading(true);
 
-    try{
+    try {
       const response = await api.post("/update", data);
       Alert.alert("Update", "Information Updated. you are required to login", [
-                  {
-                    text: "ok",
-                    style: "destructive",
-                    onPress: logout,
-                  },
-                ]);
+        {
+          text: "ok",
+          style: "destructive",
+          onPress: logout,
+        },
+      ]);
+    } catch (error) {
+      Alert.alert("Update", "Failed to Update info");
+    } finally {
+      setIsLoading(false);
     }
-    catch(error){
-      Alert.alert("Update","Failed to Update info")
-    }
-    finally{
-      setIsLoading(false)
-    }
-  }
+  };
 
-
-   const updateUserData = (field, value) => {
+  const updateUserData = (field, value) => {
     setUserData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
-
 
   const handleLogout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -84,12 +98,51 @@ const Profile = () => {
     ]);
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.delete("/delete_account");
+              Alert.alert("Account Deleted", "Your account has been deleted.", [
+                {
+                  text: "OK",
+                  onPress: logout,
+                },
+              ]);
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                "Failed to delete account. Please try again.",
+              );
+              console.error("Delete account failed:", error);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const isFormValid = () => {
     // destructuring email and password from formData
     const { firstName, lastName, email, phone } = userData;
 
     // basic validation
-    if (firstName.trim() !== "" && lastName.trim() !== "" && email.trim() !== "" && phone.trim() !== "") {
+    if (
+      firstName.trim() !== "" &&
+      lastName.trim() !== "" &&
+      email.trim() !== "" &&
+      phone.trim() !== ""
+    ) {
       return false;
     }
 
@@ -115,7 +168,7 @@ const Profile = () => {
         <View className="border border-primary rounded-2xl p-6">
           <View className="bg-primary/10 w-32 h-32 rounded-full self-center flex justify-center items-center">
             <Text className="text-primary text-4xl">
-              {(profile?.firstName?.[0]) + (profile?.lastName?.[0])}.
+              {profile?.firstName?.[0] + profile?.lastName?.[0]}.
             </Text>
           </View>
           <View className="self-center mt-4">
@@ -145,14 +198,10 @@ const Profile = () => {
             </Text>
           </View>
           <View className="flex flex-row justify-between items-center border-b border-gray-200 p-3">
-            <Text className="text-gray-800 font-semibold text-lg">
-              Email
-            </Text>
-            <Text className="text-gray-800 font-light">
-              {profile?.email}
-            </Text>
+            <Text className="text-gray-800 font-semibold text-lg">Email</Text>
+            <Text className="text-gray-800 font-light">{profile?.email}</Text>
           </View>
-          <View className="flex flex-row justify-between items-center  p-3">
+          <View className="flex flex-row border-b border-gray-200 justify-between items-center  p-3">
             <Text className="text-gray-800 font-semibold text-lg">
               Phone Number
             </Text>
@@ -160,6 +209,15 @@ const Profile = () => {
               {profile?.phone}
             </Text>
           </View>
+          <TouchableOpacity
+            className="flex flex-row  justify-between items-center p-3"
+            onPress={widthrawal.showModal}
+          >
+            <Text className="text-primary text-lg">Withdrawal</Text>
+            <Text className="text-gray-800 font-light text-lg">
+              <ChevronRight color={"#8f08fdde"} />
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* logout button */}
@@ -170,6 +228,45 @@ const Profile = () => {
           <Text className="font-semibold text-lg text-white">Logout</Text>
         </TouchableOpacity>
 
+        {/* Danger Zone */}
+        <View className="mt-10 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+          <Text className="text-red-600 font-bold text-lg mb-4">
+            Danger Zone
+          </Text>
+          <TouchableOpacity
+            onPress={handleDeleteAccount}
+            className="flex-row justify-center p-4 bg-red-500 rounded-lg"
+          >
+            <Text className="font-semibold text-lg text-white">
+              Delete Account
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Widthrawal modal */}
+        <ModalBrand
+          title={"Withdrawal"}
+          onrequestclose={widthrawal.hideModal}
+          visible={widthrawal.isVissible}
+          content={
+            <View className="">
+              <InputBrand
+                value={withdrawalAmount}
+                type={"number"}
+                placeholder={"Enter amount"}
+                onchange={(text) => setwithdrawalAmount(text)}
+              />
+              <View>
+                <ButtonBrand
+                  text={"Withdrawal"}
+                  fxn={withdraw}
+                  disabled={isValid()}
+                />
+              </View>
+            </View>
+          }
+        />
+
         {/* profile modal */}
         <ModalBrand
           title="Update Profile"
@@ -177,42 +274,48 @@ const Profile = () => {
           onrequestclose={profileModal.hideModal}
           content={
             <View>
-              <Text className="text-gray-600 text-lg ml-2 mb-2">First Name</Text>
-              <InputBrand 
-              value={userData.firstName}
-              onchange={(text) => updateUserData("firstName",text)}
-              placeholder={"First Name"}
-              type={"text"}
+              <Text className="text-gray-600 text-lg ml-2 mb-2">
+                First Name
+              </Text>
+              <InputBrand
+                value={userData.firstName}
+                onchange={(text) => updateUserData("firstName", text)}
+                placeholder={"First Name"}
+                type={"text"}
               />
               <Text className="text-gray-600 text-lg ml-2 mb-2">Last Name</Text>
-              <InputBrand 
-              value={userData.lastName}
-              onchange={(text) => updateUserData("lastName",text)}
-              placeholder={"Last Name"}
-              type={"text"}
+              <InputBrand
+                value={userData.lastName}
+                onchange={(text) => updateUserData("lastName", text)}
+                placeholder={"Last Name"}
+                type={"text"}
               />
               <Text className="text-gray-600 text-lg ml-2 mb-2">Email</Text>
-              <InputBrand 
-              value={userData.email}
-              onchange={(text) => updateUserData("email",text)}
-              placeholder={"Email"}
-              type={"email"}
+              <InputBrand
+                value={userData.email}
+                onchange={(text) => updateUserData("email", text)}
+                placeholder={"Email"}
+                type={"email"}
               />
-              <Text className="text-gray-600 text-lg ml-2 mb-2">Phone Number</Text>
-              <InputBrand 
-              value={userData.phone}
-              onchange={(text) => updateUserData("phone",text)}
-              placeholder={"Phone Number"}
-              type={"number"}
+              <Text className="text-gray-600 text-lg ml-2 mb-2">
+                Phone Number
+              </Text>
+              <InputBrand
+                value={userData.phone}
+                onchange={(text) => updateUserData("phone", text)}
+                placeholder={"Phone Number"}
+                type={"number"}
               />
               <View>
                 {isLoading ? (
                   <ActivityIndicator size="large" color="#8f08fdde" />
-                ): (
-                  <ButtonBrand 
-                  text={"Update"} 
-                  fxn={() => {updateUserInfo()}} 
-                  disabled={isFormValid() || isLoading}
+                ) : (
+                  <ButtonBrand
+                    text={"Update"}
+                    fxn={() => {
+                      updateUserInfo();
+                    }}
+                    disabled={isFormValid() || isLoading}
                   />
                 )}
               </View>
